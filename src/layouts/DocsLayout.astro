@@ -25,7 +25,7 @@ const { title, date } = Astro.props;
         <title>{title}</title>
         <ClientRouter fallback="none" />
         <script is:inline>
-            (function() {
+            (function () {
                 var t = localStorage.getItem("theme");
                 if (t) document.documentElement.setAttribute("data-theme", t);
             })();
@@ -69,6 +69,11 @@ const { title, date } = Astro.props;
                         )
                     }
                     <slot />
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <br />
                 </article>
             </main>
         </div>
@@ -102,9 +107,13 @@ const { title, date } = Astro.props;
                 overlay?.addEventListener("click", shut);
 
                 themeToggle?.addEventListener("click", () => {
-                    const current = document.documentElement.getAttribute("data-theme");
-                    const isDark = current === "dark" ||
-                        (!current && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                    const current =
+                        document.documentElement.getAttribute("data-theme");
+                    const isDark =
+                        current === "dark" ||
+                        (!current &&
+                            window.matchMedia("(prefers-color-scheme: dark)")
+                                .matches);
                     const next = isDark ? "light" : "dark";
                     document.documentElement.setAttribute("data-theme", next);
                     localStorage.setItem("theme", next);
@@ -118,50 +127,50 @@ const { title, date } = Astro.props;
         <style is:global>
             :root {
                 --sidebar-w: 240px;
-                --fg: #100F0F;
-                --fg-muted: #6F6E69;
-                --bg: #FFFCF0;
-                --bg-aside: #F2F0E5;
-                --border: #E6E4D9;
-                --accent: #205EA6;
-                --accent-secondary: #BC5215;
-                --pink: #A02F6F;
+                --fg: #100f0f;
+                --fg-muted: #6f6e69;
+                --bg: #fffcf0;
+                --bg-aside: #f2f0e5;
+                --border: #e6e4d9;
+                --accent: #205ea6;
+                --accent-secondary: #bc5215;
+                --pink: #a02f6f;
                 --pink-bg: rgba(160, 47, 111, 0.14);
-                --accent-bg: #F2F0E5;
-                --code-bg: #1C1B1A;
+                --accent-bg: #f2f0e5;
+                --code-bg: #1c1b1a;
                 --selection: rgba(32, 94, 166, 0.15);
                 --radius: 6px;
             }
 
             @media (prefers-color-scheme: dark) {
                 :root:not([data-theme="light"]) {
-                    --fg: #CECDC3;
+                    --fg: #cecdc3;
                     --fg-muted: #878580;
-                    --bg: #1C1B1A;
+                    --bg: #1c1b1a;
                     --bg-aside: #282726;
                     --border: #343331;
-                    --accent: #4385BE;
-                    --accent-secondary: #DA702C;
-                    --pink: #CE5D97;
+                    --accent: #4385be;
+                    --accent-secondary: #da702c;
+                    --pink: #ce5d97;
                     --pink-bg: rgba(206, 93, 151, 0.18);
                     --accent-bg: #282726;
-                    --code-bg: #100F0F;
+                    --code-bg: #100f0f;
                     --selection: rgba(67, 133, 190, 0.2);
                 }
             }
 
             :root[data-theme="dark"] {
-                --fg: #CECDC3;
+                --fg: #cecdc3;
                 --fg-muted: #878580;
-                --bg: #1C1B1A;
+                --bg: #1c1b1a;
                 --bg-aside: #282726;
                 --border: #343331;
-                --accent: #4385BE;
-                --accent-secondary: #DA702C;
-                --pink: #CE5D97;
+                --accent: #4385be;
+                --accent-secondary: #da702c;
+                --pink: #ce5d97;
                 --pink-bg: rgba(206, 93, 151, 0.18);
                 --accent-bg: #282726;
-                --code-bg: #100F0F;
+                --code-bg: #100f0f;
                 --selection: rgba(67, 133, 190, 0.2);
             }
 
@@ -265,17 +274,31 @@ const { title, date } = Astro.props;
                 color: var(--fg);
             }
 
-            .icon-moon { display: none; }
-
-            @media (prefers-color-scheme: dark) {
-                :root:not([data-theme="light"]) .icon-sun { display: none; }
-                :root:not([data-theme="light"]) .icon-moon { display: block; }
+            .icon-moon {
+                display: none;
             }
 
-            :root[data-theme="dark"] .icon-sun { display: none; }
-            :root[data-theme="dark"] .icon-moon { display: block; }
-            :root[data-theme="light"] .icon-sun { display: block; }
-            :root[data-theme="light"] .icon-moon { display: none; }
+            @media (prefers-color-scheme: dark) {
+                :root:not([data-theme="light"]) .icon-sun {
+                    display: none;
+                }
+                :root:not([data-theme="light"]) .icon-moon {
+                    display: block;
+                }
+            }
+
+            :root[data-theme="dark"] .icon-sun {
+                display: none;
+            }
+            :root[data-theme="dark"] .icon-moon {
+                display: block;
+            }
+            :root[data-theme="light"] .icon-sun {
+                display: block;
+            }
+            :root[data-theme="light"] .icon-moon {
+                display: none;
+            }
 
             .sidebar-close {
                 display: none;
@@ -392,7 +415,11 @@ const { title, date } = Astro.props;
                 color: var(--accent);
                 text-decoration: underline;
                 text-underline-offset: 3px;
-                text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+                text-decoration-color: color-mix(
+                    in srgb,
+                    var(--accent) 40%,
+                    transparent
+                );
             }
 
             .prose a:hover {

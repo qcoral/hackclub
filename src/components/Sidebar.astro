@@ -5,7 +5,7 @@ import sidebarConfig from "../sidebar.config";
 const docs = await getCollection("docs");
 const docsById = new Map(docs.map((doc) => [doc.id, doc]));
 
-const currentPath = Astro.url.pathname.replace(/\/$/, "");
+const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
 
 type ResolvedItem = { href: string; label: string; active: boolean };
 type ResolvedGroup = { label: string; items: ResolvedItem[] };
@@ -29,20 +29,24 @@ const groups: ResolvedGroup[] = sidebarConfig.map((group) => {
                 if (aDate !== bDate) return bDate - aDate;
                 return a.data.title.localeCompare(b.data.title);
             });
-        items = matching.map((doc) => ({
-            href: `/${doc.id}`,
-            label: doc.data.title,
-            active: currentPath === `/${doc.id}`,
-        }));
+        items = matching.map((doc) => {
+            const href = doc.id === "overview/about" ? "/" : `/${doc.id}`;
+            return {
+                href,
+                label: doc.data.title,
+                active: currentPath === href,
+            };
+        });
     } else if (group.items) {
         items = group.items
             .map((item) => {
                 const doc = docsById.get(item.slug);
                 if (!doc) return null;
+                const href = doc.id === "overview/about" ? "/" : `/${doc.id}`;
                 return {
-                    href: `/${doc.id}`,
+                    href,
                     label: item.label ?? doc.data.title,
-                    active: currentPath === `/${doc.id}`,
+                    active: currentPath === href,
                 };
             })
             .filter((item): item is ResolvedItem => item !== null);
@@ -54,7 +58,7 @@ const groups: ResolvedGroup[] = sidebarConfig.map((group) => {
 
 <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <a href="/overview/about" class="sidebar-title">philosophy</a>
+        <a href="/" class="sidebar-title">philosophy</a>
         <div class="sidebar-header-actions">
             <button
                 class="theme-toggle"

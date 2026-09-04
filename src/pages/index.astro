@@ -1,8 +1,11 @@
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="refresh" content="0;url=/overview/about" />
-        <link rel="canonical" href="/overview/about" />
-    </head>
-</html>
+---
+import { getEntry, render } from "astro:content";
+import DocsLayout from "../layouts/DocsLayout.astro";
+
+const doc = await getEntry("docs", "overview/about");
+const { Content } = await render(doc);
+---
+
+<DocsLayout title={doc.data.title} date={doc.data.date}>
+    <Content />
+</DocsLayout>

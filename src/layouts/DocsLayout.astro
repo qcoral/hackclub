@@ -1,0 +1,534 @@
+---
+import { ClientRouter } from "astro:transitions";
+import Sidebar from "../components/Sidebar.astro";
+
+interface Props {
+    title: string;
+    date?: Date;
+}
+
+const { title, date } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <title>{title}</title>
+        <ClientRouter fallback="none" />
+        <script is:inline>
+            (function() {
+                var t = localStorage.getItem("theme");
+                if (t) document.documentElement.setAttribute("data-theme", t);
+            })();
+        </script>
+        <style is:inline>
+            ::view-transition-old(root),
+            ::view-transition-new(root) {
+                animation: none;
+            }
+        </style>
+    </head>
+    <body>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu">
+            <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+            >
+                <line x1="3" y1="5" x2="17" y2="5"></line>
+                <line x1="3" y1="10" x2="17" y2="10"></line>
+                <line x1="3" y1="15" x2="17" y2="15"></line>
+            </svg>
+        </button>
+        <div class="overlay" id="overlay"></div>
+        <div class="shell">
+            <Sidebar />
+            <main class="content">
+                <article class="prose">
+                    {
+                        date && (
+                            <p class="doc-date">
+                                {date.toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                })}
+                            </p>
+                        )
+                    }
+                    <slot />
+                </article>
+            </main>
+        </div>
+
+        <script>
+            function restoreTheme() {
+                var t = localStorage.getItem("theme");
+                if (t) document.documentElement.setAttribute("data-theme", t);
+            }
+
+            function setup() {
+                restoreTheme();
+
+                const toggle = document.getElementById("menu-toggle");
+                const close = document.getElementById("sidebar-close");
+                const overlay = document.getElementById("overlay");
+                const sidebar = document.getElementById("sidebar");
+                const themeToggle = document.getElementById("theme-toggle");
+
+                function open() {
+                    sidebar?.classList.add("open");
+                    overlay?.classList.add("open");
+                }
+                function shut() {
+                    sidebar?.classList.remove("open");
+                    overlay?.classList.remove("open");
+                }
+
+                toggle?.addEventListener("click", open);
+                close?.addEventListener("click", shut);
+                overlay?.addEventListener("click", shut);
+
+                themeToggle?.addEventListener("click", () => {
+                    const current = document.documentElement.getAttribute("data-theme");
+                    const isDark = current === "dark" ||
+                        (!current && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                    const next = isDark ? "light" : "dark";
+                    document.documentElement.setAttribute("data-theme", next);
+                    localStorage.setItem("theme", next);
+                });
+            }
+
+            setup();
+            document.addEventListener("astro:after-swap", setup);
+        </script>
+
+        <style is:global>
+            :root {
+                --sidebar-w: 240px;
+                --fg: #100F0F;
+                --fg-muted: #6F6E69;
+                --bg: #FFFCF0;
+                --bg-aside: #F2F0E5;
+                --border: #E6E4D9;
+                --accent: #205EA6;
+                --accent-secondary: #BC5215;
+                --pink: #A02F6F;
+                --pink-bg: rgba(160, 47, 111, 0.14);
+                --accent-bg: #F2F0E5;
+                --code-bg: #1C1B1A;
+                --selection: rgba(32, 94, 166, 0.15);
+                --radius: 6px;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                :root:not([data-theme="light"]) {
+                    --fg: #CECDC3;
+                    --fg-muted: #878580;
+                    --bg: #1C1B1A;
+                    --bg-aside: #282726;
+                    --border: #343331;
+                    --accent: #4385BE;
+                    --accent-secondary: #DA702C;
+                    --pink: #CE5D97;
+                    --pink-bg: rgba(206, 93, 151, 0.18);
+                    --accent-bg: #282726;
+                    --code-bg: #100F0F;
+                    --selection: rgba(67, 133, 190, 0.2);
+                }
+            }
+
+            :root[data-theme="dark"] {
+                --fg: #CECDC3;
+                --fg-muted: #878580;
+                --bg: #1C1B1A;
+                --bg-aside: #282726;
+                --border: #343331;
+                --accent: #4385BE;
+                --accent-secondary: #DA702C;
+                --pink: #CE5D97;
+                --pink-bg: rgba(206, 93, 151, 0.18);
+                --accent-bg: #282726;
+                --code-bg: #100F0F;
+                --selection: rgba(67, 133, 190, 0.2);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            html {
+                font-family:
+                    "Google Sans",
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    system-ui,
+                    sans-serif;
+                color: var(--fg);
+                background: var(--bg);
+                -webkit-font-smoothing: antialiased;
+                caret-color: var(--accent);
+            }
+
+            ::selection {
+                background: var(--selection);
+            }
+
+            :focus-visible {
+                outline: 2px solid var(--accent);
+                outline-offset: 2px;
+            }
+
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+            ::-webkit-scrollbar-track {
+                background: var(--bg);
+            }
+            ::-webkit-scrollbar-thumb {
+                background: var(--border);
+                border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--fg-muted);
+            }
+
+            .shell {
+                display: flex;
+                min-height: 100dvh;
+            }
+
+            /* Sidebar */
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: var(--sidebar-w);
+                background: var(--bg-aside);
+                border-right: none;
+                padding: 1.25rem 0 2rem;
+                overflow-y: auto;
+                z-index: 100;
+            }
+
+            .sidebar-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 1.25rem;
+                margin-bottom: 1rem;
+            }
+
+            .sidebar-title {
+                font-weight: 700;
+                font-size: 1.1rem;
+                color: var(--fg);
+                text-decoration: none;
+                letter-spacing: -0.02em;
+            }
+
+            .sidebar-header-actions {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+            }
+
+            .theme-toggle {
+                background: none;
+                border: none;
+                color: var(--fg-muted);
+                cursor: pointer;
+                padding: 0.25rem;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+            }
+
+            .theme-toggle:hover {
+                color: var(--fg);
+            }
+
+            .icon-moon { display: none; }
+
+            @media (prefers-color-scheme: dark) {
+                :root:not([data-theme="light"]) .icon-sun { display: none; }
+                :root:not([data-theme="light"]) .icon-moon { display: block; }
+            }
+
+            :root[data-theme="dark"] .icon-sun { display: none; }
+            :root[data-theme="dark"] .icon-moon { display: block; }
+            :root[data-theme="light"] .icon-sun { display: block; }
+            :root[data-theme="light"] .icon-moon { display: none; }
+
+            .sidebar-close {
+                display: none;
+                background: none;
+                border: none;
+                font-size: 1.4rem;
+                color: var(--fg-muted);
+                cursor: pointer;
+                padding: 0 0.25rem;
+            }
+
+            .sidebar-group {
+                margin-bottom: 0.75rem;
+            }
+
+            .sidebar-group-label {
+                padding: 0.5rem 1.25rem 0.25rem;
+                font-size: 0.75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: var(--fg);
+            }
+
+            .sidebar ul {
+                list-style: none;
+            }
+
+            .sidebar-link {
+                display: block;
+                padding: 0.4rem 1.25rem;
+                font-size: 0.875rem;
+                color: var(--fg-muted);
+                text-decoration: none;
+                transition:
+                    color 0.15s,
+                    background 0.15s;
+            }
+
+            .sidebar-link:hover {
+                color: var(--fg);
+            }
+
+            .sidebar-link.active {
+                color: var(--pink);
+                font-weight: 500;
+                background: var(--pink-bg);
+                border-radius: 4px;
+                margin: 0 0.5rem;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            /* Content */
+            .content {
+                flex: 1;
+                margin-left: var(--sidebar-w);
+                min-width: 0;
+            }
+
+            .prose {
+                max-width: 65ch;
+                margin: 0;
+                padding: 2.5rem 2rem 4rem 3.5rem;
+                line-height: 1.65;
+                font-size: 1rem;
+                overflow-wrap: break-word;
+            }
+
+            .doc-date {
+                font-size: 0.8125rem;
+                color: var(--accent-secondary);
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .prose h1,
+            .prose h2,
+            .prose h3 {
+                text-wrap: balance;
+            }
+
+            .prose h1 {
+                font-size: 2.25rem;
+                font-weight: 700;
+                margin-bottom: 1.25rem;
+                letter-spacing: -0.03em;
+                line-height: 1.1;
+            }
+
+            .prose h2 {
+                font-size: 1.5rem;
+                font-weight: 700;
+                margin-top: 2.5rem;
+                margin-bottom: 0.75rem;
+                letter-spacing: -0.025em;
+                line-height: 1.2;
+            }
+
+            .prose h3 {
+                font-size: 1.125rem;
+                font-weight: 600;
+                margin-top: 1.75rem;
+                margin-bottom: 0.5rem;
+                line-height: 1.3;
+            }
+
+            .prose p {
+                margin-bottom: 1rem;
+            }
+
+            .prose a {
+                color: var(--accent);
+                text-decoration: underline;
+                text-underline-offset: 3px;
+                text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+            }
+
+            .prose a:hover {
+                text-decoration-color: var(--accent);
+            }
+
+            .prose ul,
+            .prose ol {
+                margin-bottom: 1rem;
+                padding-left: 1.5rem;
+            }
+
+            .prose li {
+                margin-bottom: 0.35rem;
+            }
+
+            .prose code {
+                font-family:
+                    "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas,
+                    monospace;
+                font-size: 0.875em;
+                background: var(--bg-aside);
+                padding: 0.15em 0.35em;
+                border-radius: 4px;
+            }
+
+            .prose pre {
+                background: var(--code-bg) !important;
+                border-radius: var(--radius);
+                padding: 1rem 1.25rem;
+                margin-bottom: 1.25rem;
+                overflow-x: auto;
+                font-size: 0.8125rem;
+                line-height: 1.6;
+            }
+
+            .prose pre code {
+                background: none;
+                padding: 0;
+                font-size: inherit;
+            }
+
+            .prose blockquote {
+                border-left: 2px solid var(--accent-secondary);
+                padding-left: 1rem;
+                color: var(--fg-muted);
+                margin-bottom: 1rem;
+            }
+
+            .prose hr {
+                border: none;
+                border-top: 1px solid var(--border);
+                margin: 2rem 0;
+            }
+
+            .prose table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 1.25rem;
+                font-size: 0.875rem;
+            }
+
+            .prose th,
+            .prose td {
+                padding: 0.5rem 0.75rem;
+                border: 1px solid var(--border);
+                text-align: left;
+            }
+
+            .prose th {
+                font-weight: 600;
+                background: var(--bg-aside);
+            }
+
+            .prose img {
+                max-width: 100%;
+                border-radius: var(--radius);
+                box-shadow: 0 2px 8px rgba(16, 15, 15, 0.08);
+            }
+
+            /* Mobile hamburger */
+            .menu-toggle {
+                display: none;
+                position: fixed;
+                top: 0.75rem;
+                left: 0.75rem;
+                z-index: 200;
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 0.4rem;
+                cursor: pointer;
+                color: var(--fg);
+            }
+
+            .overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.3);
+                z-index: 50;
+            }
+
+            @media (max-width: 768px) {
+                .sidebar {
+                    transform: translateX(-100%);
+                    transition: transform 0.2s ease;
+                }
+
+                .sidebar.open {
+                    transform: translateX(0);
+                    z-index: 300;
+                }
+
+                .sidebar-close {
+                    display: block;
+                }
+
+                .content {
+                    margin-left: 0;
+                }
+
+                .prose {
+                    padding: 3.5rem 1.25rem 3rem;
+                }
+
+                .menu-toggle {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .overlay.open {
+                    display: block;
+                }
+            }
+        </style>
+    </body>
+</html>

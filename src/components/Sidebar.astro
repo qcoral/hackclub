@@ -1,0 +1,137 @@
+---
+import { getCollection } from "astro:content";
+import sidebarConfig from "../sidebar.config";
+
+const docs = await getCollection("docs");
+const docsById = new Map(docs.map((doc) => [doc.id, doc]));
+
+const currentPath = Astro.url.pathname.replace(/\/$/, "");
+
+type ResolvedItem = { href: string; label: string; active: boolean };
+type ResolvedGroup = { label: string; items: ResolvedItem[] };
+
+const groups: ResolvedGroup[] = sidebarConfig.map((group) => {
+    let items: ResolvedItem[] = [];
+
+    if (group.autogenerate) {
+        const dir = group.autogenerate.directory;
+        const matching = docs
+            .filter((doc) => doc.id.startsWith(dir + "/"))
+            .sort((a, b) => {
+                const aHasOrder = a.data.order != null && a.data.order !== 999;
+                const bHasOrder = b.data.order != null && b.data.order !== 999;
+                if (aHasOrder && bHasOrder)
+                    return a.data.order! - b.data.order!;
+                if (aHasOrder) return -1;
+                if (bHasOrder) return 1;
+                const aDate = a.data.date?.getTime() ?? 0;
+                const bDate = b.data.date?.getTime() ?? 0;
+                if (aDate !== bDate) return bDate - aDate;
+                return a.data.title.localeCompare(b.data.title);
+            });
+        items = matching.map((doc) => ({
+            href: `/${doc.id}`,
+            label: doc.data.title,
+            active: currentPath === `/${doc.id}`,
+        }));
+    } else if (group.items) {
+        items = group.items
+            .map((item) => {
+                const doc = docsById.get(item.slug);
+                if (!doc) return null;
+                return {
+                    href: `/${doc.id}`,
+                    label: item.label ?? doc.data.title,
+                    active: currentPath === `/${doc.id}`,
+                };
+            })
+            .filter((item): item is ResolvedItem => item !== null);
+    }
+
+    return { label: group.label, items };
+});
+---
+
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="/overview/about" class="sidebar-title">philosophy</a>
+        <div class="sidebar-header-actions">
+            <button
+                class="theme-toggle"
+                id="theme-toggle"
+                aria-label="Toggle theme"
+            >
+                <svg
+                    class="icon-sun"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                >
+                    <circle cx="8" cy="8" r="3"></circle>
+                    <line x1="8" y1="1" x2="8" y2="3"></line><line
+                        x1="8"
+                        y1="13"
+                        x2="8"
+                        y2="15"></line>
+                    <line x1="1" y1="8" x2="3" y2="8"></line><line
+                        x1="13"
+                        y1="8"
+                        x2="15"
+                        y2="8"></line>
+                    <line x1="3.05" y1="3.05" x2="4.46" y2="4.46"></line><line
+                        x1="11.54"
+                        y1="11.54"
+                        x2="12.95"
+                        y2="12.95"></line>
+                    <line x1="3.05" y1="12.95" x2="4.46" y2="11.54"></line><line
+                        x1="11.54"
+                        y1="4.46"
+                        x2="12.95"
+                        y2="3.05"></line>
+                </svg>
+                <svg
+                    class="icon-moon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                >
+                    <path d="M13.5 8.5a5.5 5.5 0 0 1-7-7 5.5 5.5 0 1 0 7 7z"
+                    ></path>
+                </svg>
+            </button>
+            <button
+                class="sidebar-close"
+                id="sidebar-close"
+                aria-label="Close menu">&times;</button
+            >
+        </div>
+    </div>
+    {
+        groups.map((group) => (
+            <div class="sidebar-group">
+                <div class="sidebar-group-label">{group.label}</div>
+                <ul>
+                    {group.items.map((item) => (
+                        <li>
+                            <a
+                                href={item.href}
+                                class:list={[
+                                    "sidebar-link",
+                                    { active: item.active },
+                                ]}
+                            >
+                                {item.label}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        ))
+    }
+</nav>

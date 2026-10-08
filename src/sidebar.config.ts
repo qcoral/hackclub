@@ -33,6 +33,10 @@ const sidebar: SidebarConfig = [
         label: "Development",
         autogenerate: { directory: "development" },
     },
+    {
+        label: "Archive",
+        autogenerate: { directory: "archive" },
+    },
 ];
 
 export default sidebar;
